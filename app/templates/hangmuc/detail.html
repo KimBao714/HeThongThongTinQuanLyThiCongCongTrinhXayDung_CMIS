@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ item.TenHangMuc }} - Hạng mục{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/hangmuc.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="text-decoration-none small">&larr; Danh sách hạng mục</a>
+        <h2 class="mt-2 mb-0">{{ item.TenHangMuc }}</h2>
+        <a href="{{ url_for('hangmuc.detail_hangmuc', ma=item.MaHangMuc) }}" class="badge badge-brand mt-2 text-decoration-none">{{ item.MaHangMuc }}</a>
+    </div>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('hangmuc.edit_hangmuc', ma=item.MaHangMuc) }}" class="btn btn-brand">Sửa hạng mục</a>
+    {% endif %}
+</div>
+
+<nav class="hangmuc-module-nav" aria-label="Các module của hạng mục">
+    <a class="active" href="{{ url_for('hangmuc.detail_hangmuc', ma=item.MaHangMuc) }}">Tổng quan</a>
+    <a href="{{ url_for('hangmuc.related_banve', ma=item.MaHangMuc) }}">Bản vẽ liên quan</a>
+    <a href="{{ url_for('hangmuc.related_nhansu', ma=item.MaHangMuc) }}">Nhân sự phân công</a>
+    <a href="{{ url_for('hangmuc.related_vatlieu', ma=item.MaHangMuc) }}">Vật liệu sử dụng</a>
+</nav>
+
+<div class="card-panel hangmuc-detail-panel">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">Thông tin hạng mục</span>
+            <h3>{{ item.TenHangMuc }}</h3>
+        </div>
+        <span class="badge {{ 'bg-secondary' if item.hangmuc_MaHangMuc == item.MaHangMuc else 'bg-info text-dark' }}">
+            {{ 'Hạng mục gốc' if item.hangmuc_MaHangMuc == item.MaHangMuc else 'Hạng mục con' }}
+        </span>
+    </div>
+    <div class="detail-grid">
+        <div class="detail-row"><span class="detail-label">Mã hạng mục</span><span class="detail-value"><a href="{{ url_for('hangmuc.detail_hangmuc', ma=item.MaHangMuc) }}" class="link-navy">{{ item.MaHangMuc }}</a></span></div>
+        <div class="detail-row"><span class="detail-label">Hạng mục cha</span><span class="detail-value">{% if item.hangmuc_MaHangMuc == item.MaHangMuc %}Không có (hạng mục gốc){% else %}<a href="{{ url_for('hangmuc.detail_hangmuc', ma=item.hangmuc_MaHangMuc) }}" class="link-navy">{{ item.hangmuc_MaHangMuc }}</a>{% endif %}</span></div>
+        <div class="detail-row"><span class="detail-label">Ngân sách đang có</span><span class="detail-value">{{ item.NganSachDangCo | so_gon if item.NganSachDangCo else 'Chưa có' }}</span></div>
+        <div class="detail-row"><span class="detail-label">Ngày khởi công</span><span class="detail-value">{{ item.NgayKhoiCong | ngay_vn or 'Chưa có' }}</span></div>
+        <div class="detail-row"><span class="detail-label">Hoàn thành dự kiến</span><span class="detail-value">{{ item.ThoiGianHoanThanhDuKien | ngay_vn or 'Chưa có' }}</span></div>
+        <div class="detail-row"><span class="detail-label">Số hạng mục con</span><span class="detail-value">{{ danh_sach_con | length }}</span></div>
+    </div>
+    {% if co_toan_quyen() %}
+    <form method="post" action="{{ url_for('hangmuc.add_ngan_sach', ma=item.MaHangMuc) }}" class="row g-2 mt-3">
+        <div class="col-md-5">
+            <label class="form-label">Cộng thêm ngân sách (VNĐ)</label>
+            <input type="number" name="SoTienNganSach" class="form-control" min="0.01" step="0.01" required>
+        </div>
+        <div class="col-md-7 d-flex align-items-end">
+            <button type="submit" class="btn btn-brand">Cộng ngân sách</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-12" id="ban-ve-lien-quan">
+        <div class="card-panel h-100">
+            <div class="section-heading"><h3>Bản vẽ liên quan</h3><div><span class="badge bg-primary">{{ ban_ve | length }}</span><a href="{{ url_for('hangmuc.related_banve', ma=item.MaHangMuc) }}" class="btn btn-sm btn-outline-primary ms-2">Xem danh sách</a></div></div>
+            {% if ban_ve %}
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã bản vẽ</th><th>Tên bản vẽ</th><th>Mã hạng mục con</th><th>Loại</th></tr></thead><tbody>{% for bv in ban_ve %}<tr><td>{{ bv.MaBV }}</td><td>{{ bv.TenBV }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=bv.hangmuc.MaHangMuc) }}" class="badge bg-info text-dark text-decoration-none">{{ bv.hangmuc.MaHangMuc }}</a></td><td>{{ bv.LoaiBV or 'Chưa phân loại' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted mb-0">Chưa có bản vẽ liên quan.</p>{% endif %}
+        </div>
+    </div>
+    <div class="col-12" id="nhan-su-phan-cong">
+        <div class="card-panel h-100">
+            <div class="section-heading"><h3>Nhân sự phân công</h3><div><span class="badge bg-info text-dark">{{ phan_cong | length }}</span><a href="{{ url_for('hangmuc.related_nhansu', ma=item.MaHangMuc) }}" class="btn btn-sm btn-outline-primary ms-2">Xem danh sách</a></div></div>
+            {% if phan_cong %}
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã phân công</th><th>Nhân sự</th><th>Mã hạng mục con</th><th>Chức vụ</th><th>Thời gian</th></tr></thead><tbody>{% for pc in phan_cong %}<tr><td>{{ pc.MaPhanCong }}</td><td>{{ pc.nhansu.HoNV }} {{ pc.nhansu.TenNV }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=pc.hangmuc.MaHangMuc) }}" class="badge bg-info text-dark text-decoration-none">{{ pc.hangmuc.MaHangMuc }}</a></td><td>{{ pc.nhansu.ChucVu or 'Chưa có' }}</td><td>{{ pc.NgayBatDau | ngay_vn or 'Chưa xác định' }} - {{ pc.NgayKetThuc | ngay_vn or 'Chưa xác định' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted mb-0">Chưa có nhân sự được phân công.</p>{% endif %}
+        </div>
+    </div>
+    <div class="col-12" id="vat-lieu-su-dung">
+        <div class="card-panel h-100">
+            <div class="section-heading"><h3>Vật liệu sử dụng</h3><div><span class="badge bg-warning text-dark">{{ vat_lieu | length }}</span><a href="{{ url_for('hangmuc.related_vatlieu', ma=item.MaHangMuc) }}" class="btn btn-sm btn-outline-primary ms-2">Xem danh sách</a></div></div>
+            {% if vat_lieu %}
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã vật liệu</th><th>Tên vật liệu</th><th>Mã hạng mục con</th><th>Số lượng</th><th>Đơn vị</th></tr></thead><tbody>{% for sd in vat_lieu %}<tr><td>{{ sd.vatlieu.MaVL }}</td><td>{{ sd.vatlieu.TenVL }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=sd.hangmuc.MaHangMuc) }}" class="badge bg-info text-dark text-decoration-none">{{ sd.hangmuc.MaHangMuc }}</a></td><td>{{ sd.SoLuongSD | so_gon }}</td><td>{{ sd.vatlieu.DonViTinh or 'Chưa có' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted mb-0">Chưa có vật liệu được ghi nhận.</p>{% endif %}
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card-panel h-100">
+            <div class="section-heading"><h3>Chi phí liên quan</h3><span class="badge bg-danger">{{ chi_phi | length }}</span></div>
+            {% if chi_phi %}
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã chi phí</th><th>Loại chi phí</th><th>Hạng mục</th><th>Mô tả</th><th>Số tiền</th></tr></thead><tbody>{% for cp in chi_phi %}<tr><td>{{ cp.MaCP }}</td><td>{{ cp.LoaiChiPhi or 'Chưa phân loại' }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=cp.hangmuc.MaHangMuc) }}" class="link-navy">{{ cp.hangmuc.MaHangMuc }}</a></td><td>{{ cp.MoTa or 'Chưa có' }}</td><td>{{ '{:,.0f}'.format(cp.SoTienChi) if cp.SoTienChi else 'Chưa có' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted mb-0">Chưa có chi phí liên quan.</p>{% endif %}
+        </div>
+    </div>
+</div>
+
+{% if danh_sach_con %}
+<div class="card-panel mt-3">
+    <div class="section-heading"><h3>Hạng mục con trực tiếp</h3><span class="badge bg-secondary">{{ danh_sach_con | length }}</span></div>
+    <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã hạng mục</th><th>Tên hạng mục</th><th>Hạng mục cha</th><th>Ngân sách</th><th>Khởi công</th><th>Hoàn thành dự kiến</th><th></th></tr></thead><tbody>{% for child in danh_sach_con %}<tr><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.MaHangMuc) }}" class="badge badge-brand text-decoration-none">{{ child.MaHangMuc }}</a></td><td>{{ child.TenHangMuc }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.hangmuc_MaHangMuc) }}" class="link-navy">{{ child.hangmuc_MaHangMuc }}</a></td><td>{{ child.NganSachDangCo | so_gon if child.NganSachDangCo else 'Chưa có' }}</td><td>{{ child.NgayKhoiCong | ngay_vn or 'Chưa có' }}</td><td>{{ child.ThoiGianHoanThanhDuKien | ngay_vn or 'Chưa có' }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.MaHangMuc) }}" class="btn btn-sm btn-outline-primary">Xem</a></td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+{% if danh_sach_hau_due | length > danh_sach_con | length %}
+<div class="card-panel mt-3">
+    <div class="section-heading"><h3>Các hạng mục con bên dưới</h3><span class="badge bg-secondary">{{ danh_sach_hau_due | length }}</span></div>
+    <div class="table-responsive"><table class="table table-brand table-hover align-middle mb-0"><thead><tr><th>Mã hạng mục</th><th>Tên hạng mục</th><th>Hạng mục cha</th><th>Ngân sách</th><th>Khởi công</th><th>Hoàn thành dự kiến</th><th></th></tr></thead><tbody>{% for child in danh_sach_hau_due %}<tr><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.MaHangMuc) }}" class="badge badge-brand text-decoration-none">{{ child.MaHangMuc }}</a></td><td>{{ child.TenHangMuc }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.hangmuc_MaHangMuc) }}" class="link-navy">{{ child.hangmuc_MaHangMuc }}</a></td><td>{{ child.NganSachDangCo | so_gon if child.NganSachDangCo else 'Chưa có' }}</td><td>{{ child.NgayKhoiCong | ngay_vn or 'Chưa có' }}</td><td>{{ child.ThoiGianHoanThanhDuKien | ngay_vn or 'Chưa có' }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=child.MaHangMuc) }}" class="btn btn-sm btn-outline-primary">Xem</a></td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+{% endblock %}

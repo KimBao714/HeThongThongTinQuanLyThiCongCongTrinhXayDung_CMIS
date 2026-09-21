@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Danh sách bản vẽ{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/banve.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Danh sách bản vẽ</h2>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('banve.add_banve') }}" class="btn btn-brand">+ Thêm bản vẽ</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tra cứu theo mã hoặc tên bản vẽ..." value="{{ keyword }}">
+    </div>
+    <div class="col-auto">
+        <select name="hangmuc" class="form-select">
+            <option value="">-- Tất cả hạng mục --</option>
+            {% for hm in danh_sach_hang_muc %}
+            <option value="{{ hm.MaHangMuc }}" {{ 'selected' if ma_hangmuc == hm.MaHangMuc else '' }}>
+                {{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tra cứu</button>
+    </div>
+    {% if keyword or ma_hangmuc %}
+    <div class="col-auto">
+        <a href="{{ url_for('banve.list_banve') }}" class="btn btn-outline-danger">Xóa lọc</a>
+    </div>
+    {% endif %}
+</form>
+
+<div class="card-panel">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Mã bản vẽ</th>
+            <th>Tên bản vẽ</th>
+            <th>Loại</th>
+            <th>Hạng mục</th>
+            <th>Phiên bản hiện hành</th>
+            <th>Tổng số phiên bản</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in du_lieu %}
+        {% set bv = d.item %}
+        <tr>
+            <td><span class="badge badge-brand">{{ bv.MaBV }}</span></td>
+            <td>
+                <span class="clickable-name" data-bs-toggle="modal" data-bs-target="#chitiet-banve-{{ loop.index }}">
+                    {{ bv.TenBV }}
+                </span>
+            </td>
+            <td>{{ bv.LoaiBV or '' }}</td>
+            <td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=bv.hangmuc_hangmuc_MaHangMuc) }}" class="link-navy">{{ bv.hangmuc_hangmuc_MaHangMuc }}</a></td>
+            <td>
+                {% if d.hien_hanh %}
+                <span class="badge bg-success">Phiên bản {{ d.hien_hanh.SoPhienBan }}</span>
+                {% else %}
+                <span class="badge bg-secondary">Chưa có</span>
+                {% endif %}
+            </td>
+            <td>{{ d.so_phien_ban }}</td>
+            <td>
+                <a href="{{ url_for('banve.list_phien_ban', ma=bv.MaBV) }}" class="btn btn-sm btn-outline-primary">Phiên bản</a>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('banve.edit_banve', ma=bv.MaBV) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('banve.delete_banve', ma=bv.MaBV) }}" method="post" class="d-inline"
+                        onsubmit="return confirm('Xóa bản vẽ này và toàn bộ phiên bản của nó?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có bản vẽ nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Popup xem chi tiết từng bản vẽ -->
+{% for d in du_lieu %}
+{% set bv = d.item %}
+<div class="modal fade detail-modal" id="chitiet-banve-{{ loop.index }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ bv.TenBV }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row"><span class="detail-label">Mã bản vẽ</span><span class="detail-value">{{ bv.MaBV }}</span></div>
+                <div class="detail-row"><span class="detail-label">Tên bản vẽ</span><span class="detail-value">{{ bv.TenBV }}</span></div>
+                <div class="detail-row"><span class="detail-label">Loại bản vẽ</span><span class="detail-value">{{ bv.LoaiBV or 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Hạng mục</span><span class="detail-value"><a href="{{ url_for('hangmuc.detail_hangmuc', ma=bv.hangmuc_hangmuc_MaHangMuc) }}" class="link-navy">{{ bv.hangmuc_hangmuc_MaHangMuc }}</a></span></div>
+                <div class="detail-row"><span class="detail-label">Phiên bản hiện hành</span><span class="detail-value">{{ 'v' + d.hien_hanh.SoPhienBan if d.hien_hanh else 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Tổng số phiên bản</span><span class="detail-value">{{ d.so_phien_ban }}</span></div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('banve.list_phien_ban', ma=bv.MaBV) }}" class="btn btn-brand">Xem phiên bản</a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static', filename='js/banve.js') }}"></script>{% endblock %}

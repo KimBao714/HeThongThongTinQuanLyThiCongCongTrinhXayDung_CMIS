@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if item else 'Thêm' }} chi phí{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/chiphi.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Sửa chi phí' if item else 'Thêm chi phí mới' }}</h2>
+</div>
+
+<div class="card-panel">
+
+{% if not danh_sach_phan_cong or not danh_sach_su_dung_vat_lieu %}
+<div class="alert alert-warning">
+    Hệ thống hiện chưa có đủ dữ liệu <strong>phân công nhân sự</strong> và/hoặc
+    <strong>sử dụng vật liệu</strong>. Mỗi dòng chi phí bắt buộc phải gắn với
+    1 phân công và 1 lượt sử dụng vật liệu đã có sẵn (ràng buộc khóa ngoại
+    của bảng <code>chiphi</code> trong <code>realFK_DB.sql</code>) - vui lòng
+    bổ sung dữ liệu 2 bảng đó trước khi thêm chi phí.
+</div>
+{% endif %}
+
+<form method="post" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Mã chi phí</label>
+        {% if item %}
+            <input type="text" class="form-control" value="{{ item.MaCP }}" disabled>
+        {% else %}
+            <input type="text" name="MaCP" class="form-control" required
+                   value="{{ form_data.MaCP if form_data else '' }}">
+        {% endif %}
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Loại chi phí</label>
+        {% set loai_hien_tai = form_data.LoaiChiPhi if form_data else (item.LoaiChiPhi if item else '') %}
+        <select name="LoaiChiPhi" class="form-select" required>
+            <option value="">-- Chọn loại --</option>
+            {% for loai in danh_sach_loai %}
+            <option value="{{ loai }}" {{ 'selected' if loai_hien_tai == loai else '' }}>{{ loai }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Ngày chi</label>
+        <input type="text" name="NgayChi" class="form-control js-datepicker" required max="{{ hom_nay }}" placeholder="dd/mm/yyyy"
+               value="{{ form_data.NgayChi if form_data else (item.NgayChi if item else '') }}">
+        <div class="form-text">Không được chọn ngày trong tương lai.</div>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Số tiền chi (VNĐ)</label>
+        <input type="number" step="0.01" min="0.01" name="SoTienChi" class="form-control" required
+               value="{{ form_data.SoTienChi if form_data else (item.SoTienChi if item else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Hạng mục</label>
+        {% set ma_hangmuc_hien_tai = form_data.MaHangMuc if form_data else (item.hangmuc_MaHangMuc if item else '') %}
+        <select name="MaHangMuc" id="chonHangMuc" class="form-select" required>
+            <option value="">-- Chọn hạng mục --</option>
+            {% for hm in danh_sach_hang_muc %}
+            <option value="{{ hm.MaHangMuc }}" {{ 'selected' if ma_hangmuc_hien_tai == hm.MaHangMuc else '' }}>
+                {{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Phân công liên quan</label>
+        {% set ma_phancong_hien_tai = form_data.MaPhanCong if form_data else (item.phancong_MaPhanCong if item else '') %}
+        <select name="MaPhanCong" id="chonPhanCong" class="form-select" required>
+            <option value="">-- Chọn phân công --</option>
+            {% for pc in danh_sach_phan_cong %}
+            <option value="{{ pc.MaPhanCong }}" data-hangmuc="{{ pc.hangmuc_MaHangMuc }}"
+                    {{ 'selected' if ma_phancong_hien_tai == pc.MaPhanCong else '' }}>
+                {{ pc.MaPhanCong }} - {{ pc.nhansu.HoNV }} {{ pc.nhansu.TenNV }} ({{ pc.hangmuc_MaHangMuc }})
+            </option>
+            {% endfor %}
+        </select>
+        <div class="form-text">Chỉ hiện phân công thuộc hạng mục đã chọn ở trên.</div>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Lượt sử dụng vật liệu liên quan</label>
+        {% set ma_vl_hien_tai = form_data.MaVatLieu if form_data else (item.sudungvatlieu_vatlieu_MaVL if item else '') %}
+        <select name="MaVatLieu" id="chonVatLieu" class="form-select" required>
+            <option value="">-- Chọn lượt sử dụng vật liệu --</option>
+            {% for sd in danh_sach_su_dung_vat_lieu %}
+            <option value="{{ sd.vatlieu_MaVL }}" data-hangmuc="{{ sd.hangmuc_MaHangMuc }}"
+                    {{ 'selected' if (ma_vl_hien_tai == sd.vatlieu_MaVL and ma_hangmuc_hien_tai == sd.hangmuc_MaHangMuc) else '' }}>
+                {{ sd.vatlieu_MaVL }} - {{ sd.vatlieu.TenVL }} ({{ sd.hangmuc_MaHangMuc }}) - SL dùng: {{ sd.SoLuongSD | so_gon }}
+            </option>
+            {% endfor %}
+        </select>
+        <div class="form-text">Chỉ hiện lượt sử dụng vật liệu thuộc hạng mục đã chọn ở trên.</div>
+    </div>
+
+    <div class="col-12">
+        <label class="form-label">Mô tả</label>
+        <textarea name="MoTa" class="form-control" rows="2">{{ form_data.MoTa if form_data else (item.MoTa if item else '') }}</textarea>
+    </div>
+
+    <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-brand">Lưu</button>
+        <a href="{{ url_for('chiphi.list_chiphi') }}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+</form>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static', filename='js/chiphi.js') }}"></script>{% endblock %}

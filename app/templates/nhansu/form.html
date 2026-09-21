@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if item else 'Thêm' }} nhân sự{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/nhansu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Sửa nhân sự' if item else 'Thêm nhân sự mới' }}</h2>
+</div>
+
+<div class="card-panel">
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Mã nhân viên</label>
+        {% if item %}
+            <input type="text" class="form-control" value="{{ item.MaNV }}" disabled>
+        {% else %}
+            <input type="text" name="MaNV" class="form-control" required
+                   value="{{ form_data.MaNV if form_data else '' }}">
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Họ</label>
+        <input type="text" name="HoNV" class="form-control"
+               value="{{ item.HoNV if item else (form_data.HoNV if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Tên</label>
+        <input type="text" name="TenNV" class="form-control" required
+               value="{{ item.TenNV if item else (form_data.TenNV if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Ngày sinh</label>
+        <input type="text" name="NgayThangNamSinh" class="form-control js-datepicker" placeholder="dd/mm/yyyy"
+               value="{{ item.NgayThangNamSinh if item else (form_data.NgayThangNamSinh if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Chức vụ</label>
+        <input type="text" name="ChucVu" class="form-control"
+               value="{{ item.ChucVu if item else (form_data.ChucVu if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Trạng thái làm việc</label>
+        {% set current_tt = item.TrangThaiLamViec if item else (form_data.TrangThaiLamViec if form_data else '') %}
+        <select name="TrangThaiLamViec" class="form-select">
+            <option value="Đang làm việc" {{ 'selected' if current_tt == 'Đang làm việc' }}>Đang làm việc</option>
+            <option value="Tạm nghỉ" {{ 'selected' if current_tt == 'Tạm nghỉ' }}>Tạm nghỉ</option>
+            <option value="Đã nghỉ việc" {{ 'selected' if current_tt == 'Đã nghỉ việc' }}>Đã nghỉ việc</option>
+        </select>
+    </div>
+
+    <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-brand">Lưu</button>
+        <a href="{{ url_for('nhansu.list_nhansu') }}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+</form>
+</div>
+{% endblock %}

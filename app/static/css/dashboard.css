@@ -1,0 +1,197 @@
+/* Style riêng cho Dashboard tổng quan */
+
+/* Hàng thẻ KPI: flexbox tự co giãn, dòng cuối lẻ vẫn lấp đầy đều, không để trống */
+.dashboard-kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.kpi-item {
+  flex: 1 1 190px;
+}
+
+/* Hàng 6 thẻ cảnh báo: gộp về 1 lưới flexbox duy nhất thay vì 2 kiểu lưới khác nhau */
+.dashboard-warning-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.warning-item {
+  flex: 1 1 380px;
+  display: flex;
+}
+
+.warning-item > .card-panel {
+  width: 100%;
+}
+
+.stat-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 14px rgba(9, 52, 152, 0.12);
+  transform: translateY(-2px);
+  color: inherit;
+}
+
+.stat-card .stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+
+.stat-card .stat-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.stat-card .stat-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.stat-card-highlight .stat-value {
+  color: #b8860b;
+}
+
+.dashboard-chart-card {
+  height: 100%;
+}
+
+.dashboard-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 82px;
+}
+
+.dashboard-summary-card > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.summary-kicker {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.dashboard-summary-card strong { color: var(--navy); font-size: 1.25rem; }
+.summary-detail { color: var(--text-muted); flex: 1; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px dashed var(--border-soft);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.empty-state strong { color: var(--navy); }
+
+.dashboard-chart-card h5 {
+  min-height: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.35;
+  margin-bottom: 1rem !important;
+}
+
+.dashboard-chart-card canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Biểu đồ cột ngân sách theo hạng mục có thể có nhiều công trình trên trục X
+   nên không giới hạn 420px như các biểu đồ tròn khác. */
+.dashboard-chart-card-wide canvas {
+  max-width: 100%;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 14px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.legend-green { background: #2e9e5b; }
+.legend-gold { background: #d4af4a; }
+.legend-gray { background: #9aa1ab; }
+.legend-red { background: #d9534f; }
+.legend-blue { background: #093498; }
+.legend-teal { background: #0f766e; }
+.legend-lightgray { background: #c9cdd3; }
+
+.dashboard-refresh-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-refresh-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2e9e5b;
+  animation: dashboard-refresh-pulse 2s ease-in-out infinite;
+}
+
+.dashboard-refresh-dot-error {
+  background: #d9534f;
+  animation: none;
+}
+
+@keyframes dashboard-refresh-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-chart-card h5 {
+    min-height: 0;
+  }
+  .dashboard-summary-card { align-items: flex-start; flex-wrap: wrap; }
+  .dashboard-summary-card .btn { width: 100%; }
+  .kpi-item { flex-basis: calc(50% - 7px); }
+  .warning-item { flex-basis: 100%; }
+}

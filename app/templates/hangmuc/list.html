@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Danh sách hạng mục{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/hangmuc.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Danh sách hạng mục</h2>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('hangmuc.add_hangmuc') }}" class="btn btn-brand">+ Thêm hạng mục</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tra cứu theo mã hoặc tên hạng mục..." value="{{ keyword }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tra cứu</button>
+    </div>
+    {% if keyword %}
+    <div class="col-auto">
+        <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="btn btn-outline-danger">Xóa lọc</a>
+    </div>
+    {% endif %}
+</form>
+
+<div class="card-panel">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Mã hạng mục</th>
+            <th>Tên hạng mục</th>
+            <th>Ngân sách đang có</th>
+            <th>Ngày khởi công</th>
+            <th>Hoàn thành dự kiến</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for node in cay_hang_muc %}
+        {% set hm = node.item %}
+        {% set la_goc = (hm.hangmuc_MaHangMuc == hm.MaHangMuc) %}
+        <tr>
+            <td><span class="badge badge-brand">{{ hm.MaHangMuc }}</span></td>
+            <td>
+                <span class="hangmuc-ten" style="padding-left: {{ node.cap * 24 }}px;">
+                    {% if node.cap > 0 %}<span class="hangmuc-nhanh">&#8627;</span>{% endif %}
+                    <a href="{{ url_for('hangmuc.detail_hangmuc', ma=hm.MaHangMuc) }}" class="clickable-name">
+                        {{ hm.TenHangMuc }}
+                    </a>
+                    {% if la_goc %}<span class="badge bg-secondary ms-1">Gốc</span>{% endif %}
+                    {% set nhan_su_hangmuc = phan_cong_theo_hangmuc.get(hm.MaHangMuc, []) %}
+                    {% if nhan_su_hangmuc %}
+                    <span class="badge bg-info text-dark ms-1" title="Số nhân sự đang phân công">
+                        &#128100; {{ nhan_su_hangmuc | length }}
+                    </span>
+                    {% endif %}
+                    {% set vat_lieu_hangmuc = vat_lieu_theo_hangmuc.get(hm.MaHangMuc, []) %}
+                    {% if vat_lieu_hangmuc %}
+                    <span class="badge bg-warning text-dark ms-1" title="Số loại vật liệu đang sử dụng">
+                        &#128230; {{ vat_lieu_hangmuc | length }}
+                    </span>
+                    {% endif %}
+                </span>
+            </td>
+            <td>{{ hm.NganSachDangCo | so_gon if hm.NganSachDangCo else '' }}</td>
+            <td>{{ hm.NgayKhoiCong | ngay_vn }}</td>
+            <td>{{ hm.ThoiGianHoanThanhDuKien | ngay_vn }}</td>
+            <td>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('hangmuc.edit_hangmuc', ma=hm.MaHangMuc) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('hangmuc.delete_hangmuc', ma=hm.MaHangMuc) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xóa hạng mục này? (chỉ xóa được nếu không còn hạng mục con)');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Chỉ xem</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Chưa có hạng mục nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Popup xem chi tiết từng hạng mục -->
+{% for node in cay_hang_muc %}
+{% set hm = node.item %}
+{% set la_goc = (hm.hangmuc_MaHangMuc == hm.MaHangMuc) %}
+<div class="modal fade detail-modal" id="chitiet-hangmuc-{{ loop.index }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ hm.TenHangMuc }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row"><span class="detail-label">Mã hạng mục</span><span class="detail-value">{{ hm.MaHangMuc }}</span></div>
+                <div class="detail-row"><span class="detail-label">Tên hạng mục</span><span class="detail-value">{{ hm.TenHangMuc }}</span></div>
+                <div class="detail-row"><span class="detail-label">Hạng mục cha</span><span class="detail-value">{{ 'Không có (hạng mục gốc)' if la_goc else hm.hangmuc_MaHangMuc }}</span></div>
+                <div class="detail-row"><span class="detail-label">Ngân sách đang có</span><span class="detail-value">{{ hm.NganSachDangCo | so_gon if hm.NganSachDangCo else 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Ngày khởi công</span><span class="detail-value">{{ hm.NgayKhoiCong | ngay_vn or 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Hoàn thành dự kiến</span><span class="detail-value">{{ hm.ThoiGianHoanThanhDuKien | ngay_vn or 'Chưa có' }}</span></div>
+                <div class="detail-row">
+                    <span class="detail-label">Nhân sự đang làm</span>
+                    <span class="detail-value">
+                        {% set nhan_su_hangmuc = phan_cong_theo_hangmuc.get(hm.MaHangMuc, []) %}
+                        {% if nhan_su_hangmuc %}
+                            {% for pc in nhan_su_hangmuc %}
+                            <span class="badge bg-info text-dark">{{ pc.nhansu.HoNV }} {{ pc.nhansu.TenNV }}</span>
+                            {% endfor %}
+                        {% else %}
+                            Chưa phân công ai
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Vật liệu đang dùng</span>
+                    <span class="detail-value">
+                        {% set vat_lieu_hangmuc = vat_lieu_theo_hangmuc.get(hm.MaHangMuc, []) %}
+                        {% if vat_lieu_hangmuc %}
+                            {% for sd in vat_lieu_hangmuc %}
+                            <span class="badge bg-warning text-dark">{{ sd.vatlieu.TenVL }}: {{ sd.SoLuongSD | so_gon }} {{ sd.vatlieu.DonViTinh or '' }}</span>
+                            {% endfor %}
+                        {% else %}
+                            Chưa sử dụng vật liệu nào
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('hangmuc.edit_hangmuc', ma=hm.MaHangMuc) }}" class="btn btn-brand">Sửa</a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static', filename='js/hangmuc.js') }}"></script>{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Danh sách chi phí{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/chiphi.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Danh sách chi phí</h2>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('chiphi.add_chiphi') }}" class="btn btn-brand">+ Thêm chi phí</a>
+    {% endif %}
+</div>
+
+{% if ngan_sach_su_dung and ngan_sach_su_dung.vuot %}
+<div class="ngansach-canh-bao mb-3">&#9888; Hạng mục này đã sử dụng vượt ngân sách đang có!</div>
+{% endif %}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tra cứu theo mã / mô tả..." value="{{ keyword }}">
+    </div>
+    <div class="col-auto">
+        <select name="hangmuc" class="form-select">
+            <option value="">-- Tất cả hạng mục --</option>
+            {% for hm in danh_sach_hang_muc %}
+            <option value="{{ hm.MaHangMuc }}" {{ 'selected' if ma_hangmuc == hm.MaHangMuc else '' }}>
+                {{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="loai" class="form-select">
+            <option value="">-- Tất cả loại chi phí --</option>
+            {% for loai in danh_sach_loai %}
+            <option value="{{ loai }}" {{ 'selected' if loai_chi_phi == loai else '' }}>{{ loai }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tra cứu</button>
+    </div>
+    {% if keyword or ma_hangmuc or loai_chi_phi %}
+    <div class="col-auto">
+        <a href="{{ url_for('chiphi.list_chiphi') }}" class="btn btn-outline-danger">Xóa lọc</a>
+    </div>
+    {% endif %}
+</form>
+
+{% if not ma_hangmuc and not keyword and not loai_chi_phi %}
+<div class="card-panel mb-3 chiphi-overview-card">
+    <div class="section-heading"><h3>Tổng quan chi phí</h3><span class="badge bg-secondary">Toàn hệ thống</span></div>
+    <div class="row text-center gy-3">
+        <div class="col-6 col-md-3"><div class="ngansach-label">Ngân sách đang có</div><div class="ngansach-value">{{ tong_quan.tong_ngan_sach | so_gon }}</div></div>
+        <div class="col-6 col-md-3"><div class="ngansach-label">Ngân sách đã sử dụng</div><div class="ngansach-value">{{ tong_quan.tong_ngan_sach_su_dung | so_gon }}</div></div>
+        <div class="col-6 col-md-3"><div class="ngansach-label">Hạng mục có chi phí</div><div class="ngansach-value">{{ tong_quan.so_hang_muc }}</div></div>
+        <div class="col-6 col-md-3"><div class="ngansach-label">Dòng chi phí</div><div class="ngansach-value">{{ tong_quan.so_dong_chi_phi }}</div></div>
+    </div>
+    <div class="chiphi-subpanel mt-4"><h4 class="h6 mb-3">Phân bổ theo nguồn</h4><div class="table-responsive"><table class="table table-brand table-hover align-middle chiphi-source-table"><thead><tr><th>Nguồn chi phí</th><th class="text-end">Giá trị tổng hợp</th></tr></thead><tbody>
+        <tr><td>Nhân công</td><td class="text-end">{{ tong_quan.tong_nhan_cong | so_gon }}</td></tr>
+        <tr><td>Vật liệu</td><td class="text-end">{{ tong_quan.tong_vat_lieu | so_gon }}</td></tr>
+        <tr><td>Ngân sách đang có</td><td class="text-end">{{ tong_quan.tong_ngan_sach | so_gon }}</td></tr>
+        <tr><td>Khác</td><td class="text-end">{{ tong_quan.theo_loai['Khác'] | so_gon }}</td></tr>
+    </tbody></table></div></div>
+    <div class="row g-3 mt-4">
+        <div class="col-12 chiphi-subpanel">
+            <h4 class="h6 mb-3">Chi tiết chi phí nhân công từ module Nhân sự</h4>
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle chiphi-detail-table"><thead><tr><th>Mã phân công</th><th>Nhân sự</th><th>Hạng mục</th><th>Thời gian</th><th>Số lượng</th><th>Đơn vị</th><th>Đơn giá thuê</th><th>Thành tiền</th></tr></thead><tbody>
+            {% for dong in chi_tiet_nguon.phan_cong %}{% set pc = dong.item %}<tr><td>{{ pc.MaPhanCong }}</td><td>{{ pc.nhansu.HoNV }} {{ pc.nhansu.TenNV }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=pc.hangmuc_MaHangMuc) }}" class="link-navy">{{ pc.hangmuc_MaHangMuc }}</a></td><td>{{ pc.NgayBatDau | ngay_vn or 'Chưa xác định' }} - {{ pc.NgayKetThuc | ngay_vn or 'Chưa xác định' }}</td><td>{{ pc.SoNgayCong | so_gon if pc.SoNgayCong is not none else 'Chưa có' }}</td><td>{{ pc.DonViTinh or 'ngày' }}</td><td>{{ pc.ChiphiThue | so_gon if pc.ChiphiThue is not none else 'Chưa có' }}</td><td>{{ dong.thanh_tien | so_gon }}</td></tr>{% else %}<tr><td colspan="8" class="text-center text-muted">Chưa có dữ liệu phân công.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </div>
+        <div class="col-12 chiphi-subpanel">
+            <h4 class="h6 mb-3">Chi tiết chi phí vật liệu từ module Vật liệu</h4>
+            <div class="table-responsive"><table class="table table-brand table-hover align-middle chiphi-detail-table"><thead><tr><th>Mã vật liệu</th><th>Tên vật liệu</th><th>Hạng mục</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>
+            {% for dong in chi_tiet_nguon.vat_lieu %}{% set sd = dong.item %}<tr><td>{{ sd.vatlieu.MaVL }}</td><td>{{ sd.vatlieu.TenVL }}</td><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=sd.hangmuc_MaHangMuc) }}" class="link-navy">{{ sd.hangmuc_MaHangMuc }}</a></td><td>{{ sd.SoLuongSD | so_gon }}</td><td>{{ sd.vatlieu.DonGia | so_gon if sd.vatlieu.DonGia is not none else 'Chưa có' }}</td><td>{{ dong.thanh_tien | so_gon }}</td></tr>{% else %}<tr><td colspan="6" class="text-center text-muted">Chưa có dữ liệu sử dụng vật liệu.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not ma_hangmuc and not keyword and not loai_chi_phi %}
+<div class="card-panel mb-3">
+    <div class="section-heading"><h3>Tổng hợp chi phí theo hạng mục</h3><span class="badge bg-secondary">Bao gồm hạng mục con</span></div>
+    <div class="table-responsive"><table class="table table-brand table-hover align-middle chiphi-overview-table"><thead><tr><th>Hạng mục</th><th>Ngân sách đang có</th><th>Ngân sách đã sử dụng</th><th>Đã chi</th><th>Còn lại / Vượt</th><th>Liên quan</th></tr></thead><tbody>
+    {% for dong in tong_hop_theo_hang_muc %}
+    <tr><td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=dong.item.MaHangMuc) }}" class="link-navy">{{ dong.item.MaHangMuc }}</a> - {{ dong.item.TenHangMuc }}</td><td>{{ dong.ngan_sach | so_gon if dong.ngan_sach else 'Chưa có' }}</td><td>{{ dong.da_su_dung | so_gon }}</td><td>{{ dong.chi_phi | so_gon }}</td><td class="{{ 'text-danger fw-semibold' if dong.vuot else 'text-success' }}">{% if dong.con_lai is none %}Chưa có ngân sách{% elif dong.vuot %}Vượt {{ (dong.con_lai * -1) | so_gon }}{% else %}Còn {{ dong.con_lai | so_gon }}{% endif %}</td><td>{{ dong.so_phan_cong }} phân công / {{ dong.so_vat_lieu }} vật liệu / {{ dong.so_chi_phi }} chi phí</td></tr>
+    {% else %}<tr><td colspan="6" class="text-center text-muted py-4">Chưa có hạng mục nào.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endif %}
+
+{% if ngan_sach or ngan_sach_su_dung %}
+<div class="card-panel mb-3 ngansach-box {{ 'ngansach-vuot' if ngan_sach_su_dung and ngan_sach_su_dung.vuot else '' }}">
+    <div class="row text-center gy-2">
+        <div class="col-4">
+            <div class="ngansach-label">Ngân sách đang có</div>
+            <div class="ngansach-value">
+                {{ '{:,.0f}'.format(ngan_sach.ngan_sach) if ngan_sach.ngan_sach else 'Chưa khai báo' }}
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="ngansach-label">Ngân sách đã sử dụng</div>
+            <div class="ngansach-value">{{ ngan_sach_su_dung.da_su_dung | so_gon if ngan_sach_su_dung else '—' }}</div>
+        </div>
+        <div class="col-4">
+            <div class="ngansach-label">{{ 'Vượt ngân sách' if ngan_sach_su_dung and ngan_sach_su_dung.vuot else 'Còn lại' }}</div>
+            <div class="ngansach-value">
+                {% if ngan_sach_su_dung and ngan_sach_su_dung.con_lai is not none %}{{ ((ngan_sach_su_dung.con_lai * -1) if ngan_sach_su_dung.vuot else ngan_sach_su_dung.con_lai) | so_gon }}{% else %}—{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card-panel chiphi-list-panel">
+<div class="table-responsive">
+<table class="table table-brand table-hover align-middle chiphi-detail-table">
+    <thead>
+        <tr>
+            <th>Mã CP</th>
+            <th>Loại</th>
+            <th>Ngày chi</th>
+            <th>Số tiền chi</th>
+            <th>Hạng mục</th>
+            <th>Mô tả</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cp in danh_sach %}
+        <tr>
+            <td><span class="badge badge-brand">{{ cp.MaCP }}</span></td>
+            <td>{{ cp.LoaiChiPhi }}</td>
+            <td>{{ cp.NgayChi | ngay_vn }}</td>
+            <td>{{ '{:,.0f}'.format(cp.SoTienChi) if cp.SoTienChi else '' }}</td>
+            <td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=cp.hangmuc_MaHangMuc) }}" class="link-navy">{{ cp.hangmuc_MaHangMuc }}</a></td>
+            <td>{{ (cp.MoTa[:40] ~ '…') if cp.MoTa and cp.MoTa|length > 40 else (cp.MoTa or '') }}</td>
+            <td>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('chiphi.edit_chiphi', ma=cp.MaCP) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('chiphi.delete_chiphi', ma=cp.MaCP) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xóa chi phí này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Chỉ xem</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có chi phí nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

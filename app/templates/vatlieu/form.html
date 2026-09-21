@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if item else 'Thêm' }} vật liệu{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/vatlieu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Sửa vật liệu' if item else 'Thêm vật liệu mới' }}</h2>
+</div>
+
+<div class="card-panel">
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Mã vật liệu</label>
+        {% if item %}
+            <input type="text" class="form-control" value="{{ item.MaVL }}" disabled>
+        {% else %}
+            <input type="text" name="MaVL" class="form-control" required
+                   value="{{ form_data.MaVL if form_data else '' }}">
+        {% endif %}
+    </div>
+
+    <div class="col-md-8">
+        <label class="form-label">Tên vật liệu</label>
+        <input type="text" name="TenVL" class="form-control" required
+               value="{{ item.TenVL if item else (form_data.TenVL if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Số lượng đang có</label>
+        <input type="number" name="SoLuongDangCo" class="form-control"
+               value="{{ item.SoLuongDangCo if item else (form_data.SoLuongDangCo if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Đơn vị tính</label>
+        <input type="text" name="DonViTinh" class="form-control" placeholder="kg, m3, bao, cây..."
+               value="{{ item.DonViTinh if item else (form_data.DonViTinh if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Đơn giá (VNĐ)</label>
+        <input type="number" name="DonGia" class="form-control"
+               value="{{ item.DonGia if item else (form_data.DonGia if form_data else '') }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-brand">Lưu</button>
+        <a href="{{ url_for('vatlieu.list_vatlieu') }}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+</form>
+</div>
+{% endblock %}

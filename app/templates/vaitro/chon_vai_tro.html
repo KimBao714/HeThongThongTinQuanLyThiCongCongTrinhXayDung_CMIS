@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chọn vai trò - Hệ thống Quản lý Thi công</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(9, 52, 152, 0.12);
+            padding: 36px 32px;
+        }
+        .login-brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .login-brand .brand-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-brand">
+            <span class="brand-mark"></span>
+            <h4 style="color: var(--navy); font-weight: 700;">Hệ thống Quản lý Thi công</h4>
+            <p class="text-muted small mb-0">Vui lòng chọn vai trò của bạn để tiếp tục</p>
+        </div>
+
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Vai trò</label>
+                <select name="vai_tro" class="form-select" required>
+                    <option value="">-- Chọn vai trò --</option>
+                    <optgroup label="Toàn quyền (thêm / sửa / xóa)">
+                        {% for vt in vai_tro_toan_quyen %}
+                        <option value="{{ vt }}">{{ vt }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Chỉ tra cứu (xem)">
+                        {% for vt in vai_tro_tra_cuu %}
+                        <option value="{{ vt }}">{{ vt }}</option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-brand w-100">Vào hệ thống</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Dashboard tổng quan{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/dashboard.css', v='20260905') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h2>Dashboard tổng quan</h2>
+    <div class="dashboard-refresh-status small text-muted" id="dashboard-refresh-status">
+        <span class="dashboard-refresh-dot" id="dashboard-refresh-indicator"></span>
+        Tự động cập nhật mỗi 20 giây · lần cuối lúc <strong id="dashboard-refresh-time">vừa tải trang</strong>
+        <button type="button" id="dashboard-refresh-btn" class="btn btn-sm btn-outline-secondary ms-2">Làm mới ngay</button>
+    </div>
+</div>
+
+<div id="dashboard-live-root" data-refresh-url="{{ url_for('dashboard.lam_moi') }}">
+{% include "dashboard/_body.html" %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js', v='20260905') }}"></script>
+{% endblock %}

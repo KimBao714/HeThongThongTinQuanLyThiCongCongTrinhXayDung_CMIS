@@ -1,0 +1,478 @@
+:root {
+  --navy: #093498;
+  --navy-light: #2d52a7;
+  --yellow: #d4af4a;
+  --yellow-soft: #fbf8f0;
+  --yellow-pale: #fdfbf7;
+  --text-dark: #093498;
+  --text-muted: #6b7280;
+  --border-soft: #f4ebd1;
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--yellow-soft);
+  color: var(--text-dark);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ---------- Layout tổng: sidebar bên trái, nội dung bên phải ---------- */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px clamp(18px, 4vw, 48px) 44px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ---------- Sidebar bên trái, có thể đóng/mở ---------- */
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background-color: var(--navy);
+  color: #fff;
+  transition: width 0.25s ease;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header .brand {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--yellow);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .brand-text {
+  opacity: 0;
+  width: 0;
+}
+
+/* Logo nhỏ 2 màu - the hien su ket hop 2 khoi mau cung luc */
+.brand-mark {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--yellow) 50%, var(--navy) 50%);
+  flex-shrink: 0;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.sidebar.collapsed .brand-mark {
+  margin-right: 0;
+}
+
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--yellow);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.sidebar-nav {
+  padding: 18px 10px;
+  flex: 1;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  color: #d9def0;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition: background-color 0.18s, color 0.18s, transform 0.18s;
+  margin-bottom: 5px;
+}
+
+.sidebar-nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.sidebar-nav a.active {
+  background-color: var(--navy-light);
+  border-color: var(--yellow);
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.sidebar-nav .icon {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .label {
+  display: none;
+}
+
+/* ---------- Menu cha/con (submenu xổ ra khi bấm) ---------- */
+.sidebar-nav-parent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: #d9def0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.sidebar-nav-parent:hover {
+  background-color: var(--navy-light);
+  color: #fff;
+}
+
+.sidebar-nav-parent.active {
+  background-color: var(--navy-light);
+  border-left-color: var(--yellow);
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.sidebar-nav-parent .chevron {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-group.open .sidebar-nav-parent .chevron {
+  transform: rotate(90deg);
+}
+
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.15);
+  transition: max-height 0.25s ease;
+}
+
+.sidebar-nav-group.open .sidebar-submenu {
+  max-height: 200px;
+}
+
+.sidebar-submenu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 10px 40px;
+  color: #c3cae0;
+  text-decoration: none;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.sidebar-submenu a:hover {
+  background-color: var(--navy-light);
+  color: #fff;
+}
+
+.sidebar-submenu a.active {
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.sidebar-submenu .icon {
+  font-size: 1rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Khi sidebar thu gon lai (chi con icon), an luon submenu cho gon */
+.sidebar.collapsed .sidebar-submenu {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-nav-parent .chevron {
+  display: none;
+}
+
+/* ---------- Topbar: dòng chào phía trên nội dung ---------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 14px clamp(18px, 4vw, 48px);
+  min-height: 68px;
+  backdrop-filter: blur(12px);
+}
+
+.topbar-greeting {
+  font-weight: 500;
+  color: var(--navy);
+}
+
+.topbar-date {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- Thành phần dùng chung ---------- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 26px;
+}
+
+.page-header h2 {
+  color: var(--navy);
+  font-weight: 700;
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  margin: 0;
+}
+
+.btn-brand {
+  background-color: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(18, 61, 90, 0.16);
+  font-weight: 600;
+}
+.btn-brand:hover {
+  background-color: var(--navy-light);
+  border-color: var(--navy-light);
+  color: #fff;
+}
+
+.btn-yellow {
+  background-color: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--navy);
+  font-weight: 600;
+}
+.btn-yellow:hover {
+  background-color: #e8b83f;
+  border-color: #e8b83f;
+  color: var(--navy);
+}
+
+.btn, .form-control, .form-select { border-radius: 7px; }
+.btn { transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease; }
+.btn:hover { transform: translateY(-1px); }
+.form-control, .form-select {
+  border-color: #cbd9de;
+  color: var(--text-dark);
+  min-height: 42px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(30, 96, 121, 0.14);
+}
+.form-label { color: var(--text-dark); font-weight: 600; margin-bottom: 7px; }
+
+/* Card thống kê - căn giữa, bo tròn, đổ bóng nhẹ, co vien gradient 2 mau o tren */
+.card-stat {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-top: none;
+  border-radius: 12px;
+  padding: 22px 20px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(27, 42, 74, 0.06);
+  overflow: hidden;
+}
+.card-stat::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy) 45%, var(--yellow) 55%, var(--yellow) 100%);
+}
+.card-stat .stat-value {
+  color: var(--navy);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.card-stat .stat-label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.table-brand thead {
+  background-color: var(--navy);
+  color: #fff;
+}
+.table-brand thead th {
+  border-color: var(--navy);
+  font-weight: 600;
+}
+.table-brand tbody tr:hover {
+  background-color: var(--yellow-pale);
+}
+.table-responsive { border-radius: 8px; }
+.table-brand { margin-bottom: 0; }
+.table-brand th, .table-brand td { padding: 12px 14px; vertical-align: middle; }
+.table-brand tbody tr { border-color: var(--border-soft); }
+
+.card-panel {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: clamp(18px, 2.4vw, 28px);
+  box-shadow: 0 8px 24px rgba(18, 61, 90, 0.06);
+}
+
+.badge-brand {
+  background-color: var(--yellow);
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.alert { border: 0; border-left: 4px solid currentColor; border-radius: 7px; box-shadow: 0 4px 12px rgba(18, 61, 90, 0.06); }
+.section-heading { border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 18px; }
+.section-heading h3 { color: var(--navy); font-size: 1.12rem; margin-bottom: 0; }
+
+a.link-navy {
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: none;
+}
+a.link-navy:hover {
+  color: var(--yellow);
+}
+
+/* ---------- Tên/mục có thể bấm để xem chi tiết (mở popup) ---------- */
+.clickable-name {
+  cursor: pointer;
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.clickable-name:hover {
+  color: var(--yellow);
+}
+
+/* ---------- Modal xem chi tiết dùng chung cho các module ---------- */
+.detail-modal .modal-content {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.detail-modal .modal-header {
+  background-color: var(--navy);
+  color: #fff;
+  border-bottom: none;
+}
+.detail-modal .modal-header .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+.detail-modal .modal-title {
+  font-weight: 700;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.detail-row:last-child {
+  border-bottom: none;
+}
+.detail-row .detail-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  flex: 0 0 45%;
+}
+.detail-row .detail-value {
+  text-align: right;
+  flex: 1;
+  word-break: break-word;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .app-wrapper {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: relative;
+  }
+  .sidebar.collapsed {
+    width: 100%;
+    height: 56px;
+  }
+  .sidebar.collapsed .sidebar-nav {
+    display: none;
+  }
+  .topbar {
+    padding: 12px 16px;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .topbar-greeting { font-size: 0.82rem; }
+  .topbar-right { flex-wrap: wrap; justify-content: flex-end; }
+  .main-content {
+    padding: 16px;
+  }
+  .page-header { align-items: flex-start; gap: 14px; flex-direction: column; }
+  .page-header .btn { align-self: stretch; }
+  .card-panel { padding: 16px; }
+  .table-brand { min-width: 720px; }
+}

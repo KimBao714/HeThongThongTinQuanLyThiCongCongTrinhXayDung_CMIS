@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Danh sách nhân sự{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/nhansu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Danh sách nhân sự</h2>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('nhansu.add_nhansu') }}" class="btn btn-brand">+ Thêm nhân sự</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tra cứu theo tên hoặc chức vụ..." value="{{ keyword }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tra cứu</button>
+    </div>
+    {% if keyword %}
+    <div class="col-auto">
+        <a href="{{ url_for('nhansu.list_nhansu') }}" class="btn btn-outline-danger">Xóa lọc</a>
+    </div>
+    {% endif %}
+</form>
+
+<div class="card-panel">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Mã NV</th>
+            <th>Họ và tên</th>
+            <th>Ngày sinh</th>
+            <th>Chức vụ</th>
+            <th>Trạng thái</th>
+            <th>Đang làm hạng mục</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dong in du_lieu %}
+        {% set ns = dong.item %}
+        <tr>
+            <td><span class="badge badge-brand">{{ ns.MaNV }}</span></td>
+            <td>
+                <span class="clickable-name" data-bs-toggle="modal" data-bs-target="#chitiet-nhansu-{{ loop.index }}">
+                    {{ ns.HoNV }} {{ ns.TenNV }}
+                </span>
+            </td>
+            <td>{{ ns.NgayThangNamSinh | ngay_vn }}</td>
+            <td>{{ ns.ChucVu }}</td>
+            <td>
+                {% if ns.TrangThaiLamViec == 'Đang làm việc' %}
+                    <span class="badge bg-success">{{ ns.TrangThaiLamViec }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ ns.TrangThaiLamViec }}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if dong.hang_muc_dang_lam %}
+                    {% for ma_hm in dong.hang_muc_dang_lam %}
+                    <a href="{{ url_for('hangmuc.detail_hangmuc', ma=ma_hm) }}" class="badge bg-info text-dark text-decoration-none">{{ ma_hm }}</a>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted small">Chưa phân công</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('nhansu.list_phan_cong', ma=ns.MaNV) }}" class="btn btn-sm btn-outline-primary">Phân công</a>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('nhansu.edit_nhansu', ma=ns.MaNV) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('nhansu.delete_nhansu', ma=ns.MaNV) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xóa nhân sự này? (chỉ xóa được nếu không còn phân công)');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Chỉ xem</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có nhân sự nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Popup xem chi tiết từng nhân sự -->
+{% for dong in du_lieu %}
+{% set ns = dong.item %}
+<div class="modal fade detail-modal" id="chitiet-nhansu-{{ loop.index }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ ns.HoNV }} {{ ns.TenNV }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row"><span class="detail-label">Mã nhân viên</span><span class="detail-value">{{ ns.MaNV }}</span></div>
+                <div class="detail-row"><span class="detail-label">Họ và tên</span><span class="detail-value">{{ ns.HoNV }} {{ ns.TenNV }}</span></div>
+                <div class="detail-row"><span class="detail-label">Ngày sinh</span><span class="detail-value">{{ ns.NgayThangNamSinh | ngay_vn or 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Chức vụ</span><span class="detail-value">{{ ns.ChucVu or 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Trạng thái</span><span class="detail-value">{{ ns.TrangThaiLamViec or 'Chưa có' }}</span></div>
+                <div class="detail-row">
+                    <span class="detail-label">Đang làm hạng mục</span>
+                    <span class="detail-value">
+                        {% if dong.hang_muc_dang_lam %}{% for ma_hm in dong.hang_muc_dang_lam %}<a href="{{ url_for('hangmuc.detail_hangmuc', ma=ma_hm) }}" class="link-navy me-1">{{ ma_hm }}</a>{% endfor %}{% else %}Chưa phân công{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('nhansu.list_phan_cong', ma=ns.MaNV) }}" class="btn btn-outline-primary">Xem phân công</a>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('nhansu.edit_nhansu', ma=ns.MaNV) }}" class="btn btn-brand">Sửa</a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static', filename='js/nhansu.js') }}"></script>{% endblock %}

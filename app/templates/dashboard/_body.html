@@ -1,0 +1,276 @@
+{# Fragment dùng CHUNG cho:
+   1) Lần tải trang đầu tiên - index.html include file này.
+   2) Mỗi lần JS tự động polling - route /dashboard/lam-moi trả thẳng
+      render_template của riêng file này (không extends layout).
+   CHỈ 1 nguồn HTML duy nhất -> không thể xảy ra tình trạng nội dung lúc
+   polling hiển thị khác lúc tải trang lần đầu. #}
+
+{% set t = so_lieu.the_so_lieu %}
+<div class="dashboard-kpi-row mb-4">
+    <div class="kpi-item">
+        <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="stat-card">
+            <div class="stat-value">{{ t.so_hang_muc }}</div>
+            <div class="stat-label">Hạng mục</div>
+            <div class="stat-sub">{{ t.so_hang_muc_goc }} gốc / {{ t.so_hang_muc_con }} con</div>
+        </a>
+    </div>
+    <div class="kpi-item">
+        <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="stat-card">
+            <div class="stat-value">{{ t.so_hang_muc_dang_thi_cong }}</div>
+            <div class="stat-label">Đang thi công</div>
+            <div class="stat-sub">Theo mốc ngày</div>
+        </a>
+    </div>
+    <div class="kpi-item">
+        <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="stat-card stat-card-alert">
+            <div class="stat-value">{{ t.so_hang_muc_qua_han }}</div>
+            <div class="stat-label">Quá hạn</div>
+            <div class="stat-sub">Quá ngày dự kiến</div>
+        </a>
+    </div>
+    <div class="kpi-item">
+        <a href="{{ url_for('chiphi.list_chiphi') }}" class="stat-card stat-card-highlight">
+            <div class="stat-value">{{ '{:,.0f}'.format(t.tong_chi_phi_thuc_te) }}</div>
+            <div class="stat-label">Đã chi thực tế (VNĐ)</div>
+            <div class="stat-sub">{{ t.so_chi_phi }} dòng chi phí đã ghi nhận</div>
+        </a>
+    </div>
+    <div class="kpi-item">
+        <a href="{{ url_for('chiphi.list_chiphi') }}" class="stat-card">
+            <div class="stat-value">{{ '{:,.0f}'.format(t.tong_ngan_sach) }}</div>
+            <div class="stat-label">Ngân sách đang có (VNĐ)</div>
+            <div class="stat-sub">{{ '{:,.0f}'.format(t.tong_da_su_dung) }} đã sử dụng</div>
+        </a>
+    </div>
+</div>
+
+{% set cb = so_lieu.canh_bao %}
+<div class="dashboard-warning-row mb-4">
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#9888;&#65039; Hạng mục vượt ngân sách</h5>
+            {% if not cb.hang_muc_vuot_ngan_sach %}
+            <div class="text-muted small">Chưa có hạng mục nào vượt ngân sách đang có.</div>
+            {% else %}
+            <div class="form-text mb-2">Tính theo chi phí thực tế đã ghi nhận trong module Chi phí.</div>
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Hạng mục</th><th>Ngân sách</th><th>Đã dùng</th><th>Vượt</th></tr></thead>
+                <tbody>
+                    {% for hm in cb.hang_muc_vuot_ngan_sach %}
+                    <tr>
+                        <td>{{ hm.TenHangMuc }} <a href="{{ url_for('hangmuc.detail_hangmuc', ma=hm.MaHangMuc) }}" class="text-muted small">({{ hm.MaHangMuc }})</a></td>
+                        <td>{{ '{:,.0f}'.format(hm.NganSachDangCo) }}</td>
+                        <td>{{ '{:,.0f}'.format(hm.DaSuDung) }}</td>
+                        <td><span class="badge bg-danger">+{{ hm.PhanTramVuot }}%</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#128230; Vật liệu vượt số lượng đang có</h5>
+            {% if not cb.vat_lieu_vuot_du_kien %}
+            <div class="text-muted small">Chưa có vật liệu nào dùng vượt số lượng đang có.</div>
+            {% else %}
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Vật liệu</th><th>Đang có</th><th>Đã dùng</th><th>Vượt</th></tr></thead>
+                <tbody>
+                    {% for vl in cb.vat_lieu_vuot_du_kien %}
+                    <tr>
+                        <td>{{ vl.item.TenVL }} <a href="{{ url_for('vatlieu.list_su_dung', ma=vl.item.MaVL) }}" class="text-muted small">({{ vl.item.MaVL }})</a></td>
+                        <td>{{ vl.du_kien }} {{ vl.item.DonViTinh or '' }}</td>
+                        <td>{{ vl.da_dung }} {{ vl.item.DonViTinh or '' }}</td>
+                        <td><span class="badge bg-danger">{{ vl.phan_tram }}%</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#128200; Hạng mục tiến độ thấp</h5>
+            <div class="empty-state">
+                <strong>Chưa có dữ liệu tiến độ</strong>
+                <span>{{ cb.hang_muc_tien_do_thap.thong_bao }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#8987; Phiên bản bản vẽ chờ duyệt lâu nhất</h5>
+            {% if not cb.phien_ban_cho_duyet_lau_nhat %}
+            <div class="text-muted small">Không có phiên bản nào đang chờ duyệt.</div>
+            {% else %}
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Bản vẽ</th><th>Phiên bản</th><th>Ngày tạo</th><th></th></tr></thead>
+                <tbody>
+                    {% for pb in cb.phien_ban_cho_duyet_lau_nhat %}
+                    <tr>
+                        <td>{{ pb.banve.TenBV if pb.banve else pb.banve_MaBV }}</td>
+                        <td><span class="badge badge-brand">v{{ pb.SoPhienBan }}</span></td>
+                        <td>{{ pb.NgayTao | ngay_vn }}</td>
+                        <td><a href="{{ url_for('banve.list_phien_ban', ma=pb.banve_MaBV) }}" class="btn btn-sm btn-outline-primary">Xử lý</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#128196; Bản vẽ chưa có phiên bản chính thức</h5>
+            {% if not cb.ban_ve_chua_co_phien_ban_chinh_thuc %}
+            <div class="text-muted small">Mọi bản vẽ đều đã có ít nhất 1 phiên bản Đã duyệt.</div>
+            {% else %}
+            <div class="form-text mb-2">Chưa có phiên bản nào Đã duyệt (có thể đang Chờ duyệt hoặc đã bị Từ chối).</div>
+            <ul class="list-unstyled mb-0">
+                {% for bv in cb.ban_ve_chua_co_phien_ban_chinh_thuc %}
+                <li class="mb-1">
+                    <a href="{{ url_for('banve.list_phien_ban', ma=bv.MaBV) }}">{{ bv.TenBV }}</a>
+                    <span class="text-muted small">({{ bv.MaBV }})</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+    <div class="warning-item">
+        <div class="card-panel h-100">
+            <h5 class="mb-3">&#128197; Hạng mục trễ tiến độ dự kiến</h5>
+            <div class="form-text mb-2">
+                Chỉ dựa trên ngày dự kiến hoàn thành đã qua - CSDL không còn lưu trạng thái
+                "đã hoàn thành hay chưa", nên đây là cảnh báo <strong>cần kiểm tra thủ công</strong>,
+                không phải khẳng định chắc chắn đang trễ.
+            </div>
+            {% if not cb.hang_muc_tre_tien_do %}
+            <div class="text-muted small">Không có hạng mục nào quá ngày dự kiến hoàn thành.</div>
+            {% else %}
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Hạng mục</th><th>Dự kiến xong</th><th>Số ngày trễ</th></tr></thead>
+                <tbody>
+                    {% for dong in cb.hang_muc_tre_tien_do %}
+                    <tr>
+                        <td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=dong.item.MaHangMuc) }}">{{ dong.item.TenHangMuc }}</a></td>
+                        <td>{{ dong.item.ThoiGianHoanThanhDuKien | ngay_vn }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ dong.so_ngay_tre }} ngày</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4 dashboard-summary-row">
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-summary-card">
+            <div><span class="summary-kicker">Nhân sự</span><strong>{{ t.so_nhan_su }} người</strong></div>
+            <span class="summary-detail">{{ t.so_phan_cong }} phân công đang quản lý</span>
+            <a href="{{ url_for('nhansu.list_nhansu') }}" class="btn btn-sm btn-outline-primary">Mở Nhân sự</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-summary-card">
+            <div><span class="summary-kicker">Bản vẽ</span><strong>{{ t.so_ban_ve }} bản vẽ</strong></div>
+            <span class="summary-detail">{{ t.so_phien_ban }} phiên bản trong hệ thống</span>
+            <a href="{{ url_for('banve.list_banve') }}" class="btn btn-sm btn-outline-primary">Mở Bản vẽ</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4 dashboard-chart-row">
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card dashboard-budget-card">
+            <h5 class="mb-3">Đã sử dụng so với ngân sách đang có</h5>
+            <canvas id="chartNganSach" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu ngân sách">
+                <span><i class="legend-swatch legend-green"></i>Đã sử dụng</span>
+                <span><i class="legend-swatch legend-blue"></i>Còn lại</span>
+                <span><i class="legend-swatch legend-red"></i>Vượt ngân sách</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card">
+            <h5 class="mb-3">Hạng mục theo trạng thái (ước tính theo ngày)</h5>
+            <canvas id="chartTrangThaiHangMuc" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu hạng mục">
+                <span><i class="legend-swatch legend-green"></i>Đang thi công</span>
+                <span><i class="legend-swatch legend-red"></i>Quá hạn (ước tính)</span>
+                <span><i class="legend-swatch legend-gold"></i>Chưa khởi công</span>
+                <span><i class="legend-swatch legend-gray"></i>Chưa xác định</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card">
+            <h5 class="mb-3">Nhân sự theo trạng thái</h5>
+            <canvas id="chartNhanSu" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu nhân sự">
+                <span><i class="legend-swatch legend-green"></i>Đang làm việc</span>
+                <span><i class="legend-swatch legend-gold"></i>Tạm nghỉ</span>
+                <span><i class="legend-swatch legend-gray"></i>Đã nghỉ việc</span>
+                <span><i class="legend-swatch legend-lightgray"></i>Chưa xác định</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card">
+            <h5 class="mb-3">Phiên bản bản vẽ theo trạng thái</h5>
+            <canvas id="chartPhienBan" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu phiên bản">
+                <span><i class="legend-swatch legend-gold"></i>Chờ duyệt</span>
+                <span><i class="legend-swatch legend-green"></i>Đã duyệt</span>
+                <span><i class="legend-swatch legend-red"></i>Từ chối</span>
+                <span><i class="legend-swatch legend-gray"></i>Cũ</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card">
+            <h5 class="mb-3">Chi phí theo loại</h5>
+            <canvas id="chartChiPhiTheoLoai" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu chi phí">
+                <span><i class="legend-swatch legend-blue"></i>Nhân công</span>
+                <span><i class="legend-swatch legend-gold"></i>Vật liệu</span>
+                <span><i class="legend-swatch legend-gray"></i>Khác</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-panel dashboard-chart-card dashboard-chart-card-wide">
+            <h5 class="mb-3">Ngân sách theo từng hạng mục (công trình)</h5>
+            {% if not so_lieu.bieu_do.ngan_sach_theo_hang_muc_goc %}
+            <div class="text-muted small">Chưa có hạng mục nào để so sánh ngân sách.</div>
+            {% else %}
+            <canvas id="chartNganSachTheoHangMuc" height="220"></canvas>
+            <div class="chart-legend" aria-label="Chú thích màu ngân sách theo hạng mục">
+                <span><i class="legend-swatch legend-teal"></i>Ngân sách đang có</span>
+                <span><i class="legend-swatch legend-blue"></i>Đã sử dụng</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Dữ liệu biểu đồ nhúng kèm HTML - JS đọc lại đúng script này để vẽ Chart.js,
+   dù là lần tải trang đầu tiên hay 1 lần polling tự động tiếp theo. Không
+   phải là 1 API JSON riêng - tránh phải định nghĩa/maintain 2 định dạng dữ
+   liệu (HTML fragment + JSON) không khớp nhau. #}
+<script type="application/json" id="dashboard-live-data">
+{
+  "nganSachVsDaSuDung": {{ so_lieu.bieu_do.ngan_sach_vs_da_su_dung | tojson }},
+  "hangMucTheoTrangThai": {{ so_lieu.bieu_do.hang_muc_theo_trang_thai | tojson }},
+  "nhanSuTheoTrangThai": {{ so_lieu.bieu_do.nhan_su_theo_trang_thai | tojson }},
+  "phienBanTheoTrangThai": {{ so_lieu.bieu_do.phien_ban_theo_trang_thai | tojson }},
+  "chiPhiTheoLoai": {{ so_lieu.bieu_do.chi_phi_theo_loai | tojson }},
+  "nganSachTheoHangMucGoc": {{ so_lieu.bieu_do.ngan_sach_theo_hang_muc_goc | tojson }}
+}
+</script>
