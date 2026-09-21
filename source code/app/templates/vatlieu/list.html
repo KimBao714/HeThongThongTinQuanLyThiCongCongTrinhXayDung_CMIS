@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Danh sách vật liệu{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/vatlieu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Danh sách vật liệu</h2>
+    {% if co_toan_quyen() %}
+    <a href="{{ url_for('vatlieu.add_vatlieu') }}" class="btn btn-brand">+ Thêm vật liệu</a>
+    {% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tra cứu theo tên vật liệu..." value="{{ keyword }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tra cứu</button>
+    </div>
+    {% if keyword %}
+    <div class="col-auto">
+        <a href="{{ url_for('vatlieu.list_vatlieu') }}" class="btn btn-outline-danger">Xóa lọc</a>
+    </div>
+    {% endif %}
+</form>
+
+<div class="card-panel">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Mã VL</th>
+            <th>Tên vật liệu</th>
+            <th>Số lượng đang có</th>
+            <th>Đơn vị tính</th>
+            <th>Đơn giá</th>
+            <th>Đang dùng cho hạng mục</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dong in du_lieu %}
+        {% set vl = dong.item %}
+        {% set sd = dong.su_dung %}
+        <tr>
+            <td><span class="badge badge-brand">{{ vl.MaVL }}</span></td>
+            <td>
+                <span class="clickable-name" data-bs-toggle="modal" data-bs-target="#chitiet-vatlieu-{{ loop.index }}">
+                    {{ vl.TenVL }}
+                </span>
+            </td>
+            <td>
+                {{ vl.SoLuongDangCo | so_gon if vl.SoLuongDangCo is not none else '' }}
+                {% if sd and sd.vuot %}
+                <span class="badge bg-danger ms-1" title="Đã dùng vượt số lượng đang có">&#9888; Vượt</span>
+                {% endif %}
+            </td>
+            <td>{{ vl.DonViTinh }}</td>
+            <td>{{ vl.DonGia | so_gon if vl.DonGia else '' }}</td>
+            <td>
+                {% if dong.hang_muc_dang_dung %}
+                    {% for ma_hm in dong.hang_muc_dang_dung %}
+                    <a href="{{ url_for('hangmuc.detail_hangmuc', ma=ma_hm) }}" class="badge bg-info text-dark text-decoration-none">{{ ma_hm }}</a>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted small">Chưa sử dụng</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('vatlieu.list_su_dung', ma=vl.MaVL) }}" class="btn btn-sm btn-outline-primary">Sử dụng</a>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('vatlieu.edit_vatlieu', ma=vl.MaVL) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('vatlieu.delete_vatlieu', ma=vl.MaVL) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xóa vật liệu này? (chỉ xóa được nếu không còn hạng mục nào đang sử dụng)');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Chỉ xem</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có vật liệu nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Popup xem chi tiết từng vật liệu -->
+{% for dong in du_lieu %}
+{% set vl = dong.item %}
+{% set sd = dong.su_dung %}
+<div class="modal fade detail-modal" id="chitiet-vatlieu-{{ loop.index }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ vl.TenVL }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row"><span class="detail-label">Mã vật liệu</span><span class="detail-value">{{ vl.MaVL }}</span></div>
+                <div class="detail-row"><span class="detail-label">Tên vật liệu</span><span class="detail-value">{{ vl.TenVL }}</span></div>
+                <div class="detail-row"><span class="detail-label">Số lượng đang có</span><span class="detail-value">{{ vl.SoLuongDangCo | so_gon if vl.SoLuongDangCo is not none else 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Đơn vị tính</span><span class="detail-value">{{ vl.DonViTinh or 'Chưa có' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Đơn giá</span><span class="detail-value">{{ vl.DonGia | so_gon if vl.DonGia else 'Chưa có' }}</span></div>
+                {% if sd %}
+                <div class="detail-row"><span class="detail-label">Đã dùng (tất cả hạng mục)</span><span class="detail-value">{{ sd.tong_da_dung }}{{ ' / ' ~ sd.du_kien|string if sd.du_kien else '' }}</span></div>
+                {% endif %}
+                <div class="detail-row">
+                    <span class="detail-label">Hạng mục đang dùng</span>
+                    <span class="detail-value">
+                        {% if dong.hang_muc_dang_dung %}{% for ma_hm in dong.hang_muc_dang_dung %}<a href="{{ url_for('hangmuc.detail_hangmuc', ma=ma_hm) }}" class="link-navy me-1">{{ ma_hm }}</a>{% endfor %}{% else %}Chưa sử dụng{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('vatlieu.list_su_dung', ma=vl.MaVL) }}" class="btn btn-outline-primary">Xem sử dụng</a>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('vatlieu.edit_vatlieu', ma=vl.MaVL) }}" class="btn btn-brand">Sửa</a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static', filename='js/vatlieu.js') }}"></script>{% endblock %}

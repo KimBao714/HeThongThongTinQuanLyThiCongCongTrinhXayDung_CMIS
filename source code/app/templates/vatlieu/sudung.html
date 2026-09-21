@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Sử dụng vật liệu - {{ item.TenVL }}{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/vatlieu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Sử dụng vật liệu: {{ item.TenVL }} <span class="badge badge-brand">{{ item.MaVL }}</span></h2>
+    <a href="{{ url_for('vatlieu.list_vatlieu') }}" class="btn btn-outline-secondary">&larr; Quay lại danh sách</a>
+</div>
+
+{% if su_dung %}
+<div class="card-panel mb-3 dukien-box {{ 'dukien-vuot' if su_dung.vuot else '' }}">
+    <div class="row text-center gy-2">
+        <div class="col-6 col-md-3">
+            <div class="dukien-label">Số lượng đang có</div>
+            <div class="dukien-value">
+                {{ su_dung.du_kien | so_gon if su_dung.du_kien else 'Chưa khai báo' }} {{ item.DonViTinh or '' }}
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dukien-label">Đã sử dụng (mọi hạng mục)</div>
+            <div class="dukien-value">{{ su_dung.tong_da_dung | so_gon }} {{ item.DonViTinh or '' }}</div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dukien-label">Tỉ lệ đã dùng</div>
+            <div class="dukien-value">{{ (su_dung.phan_tram ~ '%') if su_dung.phan_tram is not none else '—' }}</div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="dukien-label">{{ 'Vượt mức đang có' if su_dung.vuot else 'Còn lại' }}</div>
+            <div class="dukien-value">
+                {{ su_dung.con_lai | so_gon if su_dung.con_lai is not none else '—' }}
+            </div>
+        </div>
+    </div>
+    {% if su_dung.vuot %}
+    <div class="dukien-canh-bao mt-2">&#9888; Vật liệu này đã được sử dụng vượt số lượng đang có!</div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if co_toan_quyen() %}
+<div class="card-panel mb-3">
+    <h5 class="mb-3">Ghi nhận thêm vật liệu cho hạng mục</h5>
+
+    {% if not danh_sach_hang_muc_con %}
+    <div class="alert alert-warning mb-0">
+        Hệ thống chưa có hạng mục con nào (chỉ có hạng mục gốc/công trình). Chỉ được ghi nhận sử dụng vật
+        liệu vào hạng mục con - cần tạo hạng mục con trước ở module Hạng mục.
+    </div>
+    {% else %}
+    <form method="post" action="{{ url_for('vatlieu.add_su_dung', ma=item.MaVL) }}" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Hạng mục con</label>
+            <select name="MaHangMuc" class="form-select" required>
+                <option value="">-- Chọn hạng mục con --</option>
+                {% for hm in danh_sach_hang_muc_con %}
+                <option value="{{ hm.MaHangMuc }}">{{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Số lượng sử dụng {{ ('(' ~ item.DonViTinh ~ ')') if item.DonViTinh else '' }}</label>
+            <input type="number" step="0.01" min="0.01" name="SoLuongSD" class="form-control" required>
+        </div>
+        <div class="col-12">
+            <div class="form-text mb-2">
+                Nếu hạng mục đã có vật liệu này, số lượng mới sẽ được cộng dồn vào dòng hiện có.
+            </div>
+            <button type="submit" class="btn btn-brand">Ghi nhận</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="card-panel">
+<div class="table-responsive">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Mã hạng mục</th>
+            <th>Tên hạng mục</th>
+            <th>Số lượng sử dụng</th>
+            <th>Đơn vị</th>
+            <th>Thành tiền</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sd in danh_sach %}
+        <tr>
+            <td><a href="{{ url_for('hangmuc.detail_hangmuc', ma=sd.hangmuc_MaHangMuc) }}" class="badge badge-brand text-decoration-none">{{ sd.hangmuc_MaHangMuc }}</a></td>
+            <td>{{ sd.hangmuc.TenHangMuc if sd.hangmuc else 'Chưa có' }}</td>
+            <td>{{ sd.SoLuongSD | so_gon }} {{ item.DonViTinh or '' }}</td>
+            <td>{{ item.DonViTinh or 'Chưa có' }}</td>
+            <td>{{ ((sd.SoLuongSD or 0) * (item.DonGia or 0)) | so_gon }}</td>
+            <td>
+                {% if co_toan_quyen() %}
+                <a href="{{ url_for('vatlieu.edit_su_dung', ma=item.MaVL, ma_hangmuc=sd.hangmuc_MaHangMuc) }}" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                <form action="{{ url_for('vatlieu.delete_su_dung', ma=item.MaVL, ma_hangmuc=sd.hangmuc_MaHangMuc) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Xóa lượt sử dụng này?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+                {% else %}
+                <span class="text-muted small">Chỉ xem</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Vật liệu này chưa được sử dụng cho hạng mục nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+.chiphi-overview-table,
+.chiphi-detail-table {
+  min-width: 760px;
+  margin-bottom: 0;
+}
+
+.chiphi-source-table {
+  min-width: 520px;
+  margin-bottom: 0;
+}
+
+.chiphi-source-table th:first-child,
+.chiphi-source-table td:first-child {
+  width: 65%;
+}
+
+.chiphi-source-table th:last-child,
+.chiphi-source-table td:last-child {
+  width: 35%;
+  white-space: nowrap;
+}
+
+.chiphi-source-table th,
+.chiphi-source-table td {
+  padding: 13px 16px;
+}
+
+.chiphi-overview-table th,
+.chiphi-detail-table th {
+  padding: 13px 16px;
+  white-space: nowrap;
+}
+
+.chiphi-overview-table td,
+.chiphi-detail-table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.chiphi-overview-table td:last-child {
+  min-width: 220px;
+}
+
+.chiphi-detail-section {
+  margin-top: 28px;
+}
+
+.chiphi-detail-section h4 {
+  margin-bottom: 12px;
+  color: var(--text-dark);
+}
+
+.chiphi-list-panel {
+  padding: 20px 22px;
+}
+
+.chiphi-overview-card {
+  padding: 22px;
+}
+
+.chiphi-subpanel {
+  padding: 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  background: #fbfcfd;
+}
+
+.chiphi-subpanel h4 {
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.chiphi-list-panel .table-responsive + .table-responsive {
+  margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  .chiphi-list-panel {
+    padding: 16px;
+  }
+
+  .chiphi-overview-card,
+  .chiphi-subpanel {
+    padding: 16px;
+  }
+
+  .chiphi-overview-table th,
+  .chiphi-overview-table td,
+  .chiphi-detail-table th,
+  .chiphi-detail-table td {
+    padding: 11px 13px;
+  }
+}
+/* Style riêng cho module Chi phí */
+
+.ngansach-box {
+  border-left: 4px solid var(--navy);
+}
+
+.ngansach-box.ngansach-vuot {
+  border-left-color: #b02a37;
+  background-color: #fdf1f2;
+}
+
+.ngansach-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ngansach-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.ngansach-canh-bao {
+  color: #b02a37;
+  font-weight: 600;
+}

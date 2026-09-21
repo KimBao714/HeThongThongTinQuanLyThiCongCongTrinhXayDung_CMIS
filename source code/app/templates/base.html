@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Quản lý thi công{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-wrapper">
+
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <span class="brand"><span class="brand-mark"></span><span class="brand-text">QL Thi Công</span></span>
+                <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Đóng/mở menu">&#9776;</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard.tong_quan') }}" class="{{ 'active' if active_module == 'dashboard' else '' }}">
+                    <span class="icon">&#128202;</span><span class="label">Dashboard tổng quan</span>
+                </a>
+                <a href="{{ url_for('hangmuc.list_hangmuc') }}" class="{{ 'active' if active_module == 'hangmuc' else '' }}">
+                    <span class="icon">&#128193;</span><span class="label">Hạng mục</span>
+                </a>
+                <a href="{{ url_for('vatlieu.list_vatlieu') }}" class="{{ 'active' if active_module == 'vatlieu' else '' }}">
+                    <span class="icon">&#128230;</span><span class="label">Vật liệu</span>
+                </a>
+                <a href="{{ url_for('nhansu.list_nhansu') }}" class="{{ 'active' if active_module == 'nhansu' else '' }}">
+                    <span class="icon">&#128101;</span><span class="label">Nhân sự</span>
+                </a>
+                <a href="{{ url_for('banve.list_banve') }}" class="{{ 'active' if active_module == 'banve' else '' }}">
+                    <span class="icon">&#128196;</span><span class="label">Bản vẽ</span>
+                </a>
+                <a href="{{ url_for('chiphi.list_chiphi') }}" class="{{ 'active' if active_module == 'chiphi' else '' }}">
+                    <span class="icon">&#128176;</span><span class="label">Chi phí</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="content-wrapper">
+            <header class="topbar">
+                <span class="topbar-greeting">
+                    Vai trò: <strong>{{ vai_tro_hien_tai() }}</strong>
+                    {% if co_toan_quyen() %}
+                        <span class="badge bg-success ms-1">Toàn quyền</span>
+                    {% else %}
+                        <span class="badge bg-secondary ms-1">Tra cứu</span>
+                    {% endif %}
+                    <a href="{{ url_for('vaitro.doi_vai_tro') }}" class="link-navy ms-2" style="font-size: 0.85rem;">(Đổi vai trò)</a>
+                </span>
+                <span class="topbar-right">
+                    <span class="topbar-date" id="topbarDate"></span>
+                    <a href="{{ url_for('vaitro.dang_xuat_route') }}" class="btn btn-outline-secondary btn-sm ms-3"
+                       onclick="return confirm('Bạn có chắc muốn đăng xuất?');">
+                        &#128682; Đăng xuất
+                    </a>
+                </span>
+            </header>
+
+            <main class="main-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/vn.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

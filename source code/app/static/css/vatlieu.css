@@ -1,0 +1,28 @@
+/* Style riêng cho module Vật liệu */
+
+.dukien-box {
+  border-left: 4px solid var(--navy);
+}
+
+.dukien-box.dukien-vuot {
+  border-left-color: #b02a37;
+  background-color: #fdf1f2;
+}
+
+.dukien-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dukien-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.dukien-canh-bao {
+  color: #b02a37;
+  font-weight: 600;
+}

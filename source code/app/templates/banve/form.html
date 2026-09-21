@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if item else 'Thêm' }} bản vẽ{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/banve.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ 'Sửa bản vẽ' if item else 'Thêm bản vẽ mới' }}</h2>
+</div>
+
+<div class="card-panel">
+<form method="post" class="row g-3" enctype="multipart/form-data">
+    <div class="col-md-4">
+        <label class="form-label">Mã bản vẽ</label>
+        {% if item %}
+            <input type="text" class="form-control" value="{{ item.MaBV }}" disabled>
+        {% else %}
+            <input type="text" name="MaBV" class="form-control" required
+                   value="{{ form_data.MaBV if form_data else '' }}">
+        {% endif %}
+    </div>
+
+    <div class="col-md-8">
+        <label class="form-label">Tên bản vẽ</label>
+        <input type="text" name="TenBV" class="form-control" required
+               value="{{ item.TenBV if item else (form_data.TenBV if form_data else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Loại bản vẽ</label>
+        {% set loai_ban_ve_hien_tai = form_data.LoaiBV if form_data else (item.LoaiBV if item else 'Kiến trúc') %}
+        <select name="LoaiBV" class="form-select" required>
+            {% for loai in ['Kiến trúc', 'Kết cấu', 'Cơ điện (MEP)', 'Chi tiết thi công'] %}
+            <option value="{{ loai }}" {{ 'selected' if loai_ban_ve_hien_tai == loai else '' }}>{{ loai }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-8">
+        <label class="form-label">Hạng mục</label>
+        {% set ma_hangmuc_hien_tai = form_data.MaHangMuc if form_data else (item.hangmuc_hangmuc_MaHangMuc if item else '') %}
+        <select name="MaHangMuc" class="form-select" required>
+            <option value="">-- Chọn hạng mục --</option>
+            {% for hm in danh_sach_hang_muc %}
+            <option value="{{ hm.MaHangMuc }}" {{ 'selected' if ma_hangmuc_hien_tai == hm.MaHangMuc else '' }}>
+                {{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if not item %}
+    <div class="col-12"><hr></div>
+    <div class="col-12">
+        <h6 class="mb-2">Phiên bản đầu tiên (v1)</h6>
+        <div class="form-text mb-3">
+            Bản vẽ chỉ có giá trị khi có file đính kèm, nên khi tạo mới bắt buộc phải tải lên file ngay -
+            hệ thống tự tạo phiên bản v1 (trạng thái "Chờ duyệt"). Muốn tải thêm phiên bản sau này (v2, v3...),
+            vào trang "Phiên bản" của bản vẽ đó.
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Họ người tạo</label>
+        <input type="text" name="HoNguoiTao" class="form-control" required
+               value="{{ form_data.HoNguoiTao if form_data else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Tên người tạo</label>
+        <input type="text" name="TenNguoiTao" class="form-control" required
+               value="{{ form_data.TenNguoiTao if form_data else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">File bản vẽ</label>
+        <input type="file" name="file_ban_ve" class="form-control" required>
+        <div class="form-text">Định dạng: pdf, png, jpg, jpeg, dwg (tối đa 20MB).</div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="form-text">
+            Không sửa file bản vẽ ở đây. Muốn tải lên phiên bản mới, vào trang
+            <a href="{{ url_for('banve.list_phien_ban', ma=item.MaBV) }}">Phiên bản</a> của bản vẽ này.
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-brand">Lưu</button>
+        <a href="{{ url_for('banve.list_banve') }}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+</form>
+</div>
+{% endblock %}

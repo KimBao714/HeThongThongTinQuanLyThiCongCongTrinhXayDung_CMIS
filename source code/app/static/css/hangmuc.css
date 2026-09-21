@@ -1,0 +1,121 @@
+/* Style riêng cho module Hạng mục */
+
+.hangmuc-ten {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hangmuc-nhanh {
+  color: var(--text-muted);
+}
+
+.hangmuc-module-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.hangmuc-module-nav a {
+  color: var(--text-muted);
+  padding: 10px 16px;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 600;
+}
+
+.hangmuc-module-nav a:hover,
+.hangmuc-module-nav a.active {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+}
+
+.hangmuc-detail-panel {
+  padding: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-heading h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.eyebrow {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+}
+
+.detail-list {
+  display: grid;
+  gap: 8px;
+}
+
+.hangmuc-detail-panel,
+.row > [id] {
+  scroll-margin-top: 20px;
+}
+
+.detail-list-item,
+.child-project-list a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.detail-list-item:last-child,
+.child-project-list a:last-child {
+  border-bottom: 0;
+}
+
+.child-project-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0 24px;
+}
+
+.child-project-list a {
+  color: var(--text-dark);
+  text-decoration: none;
+}
+
+.child-project-list a:hover {
+  color: var(--navy);
+}
+
+@media (max-width: 576px) {
+  .hangmuc-detail-panel {
+    padding: 18px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hangmuc-module-nav a {
+    padding: 9px 10px;
+    font-size: 0.9rem;
+  }
+}

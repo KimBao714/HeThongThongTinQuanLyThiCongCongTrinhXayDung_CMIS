@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Sửa phân công{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/nhansu.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Sửa phân công <span class="badge badge-brand">{{ item.MaPhanCong }}</span></h2>
+</div>
+
+<div class="card-panel">
+<form method="post" class="row g-3">
+    <div class="col-md-4">
+        <label class="form-label">Nhân sự</label>
+        <input type="text" class="form-control"
+               value="{{ item.nhansu.HoNV }} {{ item.nhansu.TenNV }} ({{ item.nhansu_MaNV }})" disabled>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Hạng mục con</label>
+        {% set ma_hangmuc_hien_tai = form_data.MaHangMuc if form_data else item.hangmuc_MaHangMuc %}
+        <select name="MaHangMuc" class="form-select" required>
+            {% for hm in danh_sach_hang_muc_con %}
+            <option value="{{ hm.MaHangMuc }}" {{ 'selected' if ma_hangmuc_hien_tai == hm.MaHangMuc else '' }}>
+                {{ hm.MaHangMuc }} - {{ hm.TenHangMuc }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Địa điểm làm việc</label>
+        <input type="text" name="DiaDiemLamViec" class="form-control"
+               value="{{ form_data.DiaDiemLamViec if form_data else (item.DiaDiemLamViec or '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Số lượng công</label>
+        <input type="number" min="1" name="SoNgayCong" class="form-control"
+               value="{{ form_data.SoNgayCong if form_data else (item.SoNgayCong if item.SoNgayCong is not none else '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Đơn vị tính</label>
+        {% set don_vi_tinh_hien_tai = form_data.DonViTinh if form_data else (item.DonViTinh or 'ngày') %}
+        <select name="DonViTinh" class="form-select">
+            <option value="ngày" {{ 'selected' if don_vi_tinh_hien_tai == 'ngày' else '' }}>Ngày</option>
+            <option value="tháng" {{ 'selected' if don_vi_tinh_hien_tai == 'tháng' else '' }}>Tháng</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Ngày bắt đầu</label>
+        <input type="text" name="NgayBatDau" class="form-control js-datepicker" placeholder="dd/mm/yyyy"
+               value="{{ form_data.NgayBatDau if form_data else (item.NgayBatDau or '') }}">
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">Ngày kết thúc</label>
+        <input type="text" name="NgayKetThuc" class="form-control js-datepicker" placeholder="dd/mm/yyyy"
+               value="{{ form_data.NgayKetThuc if form_data else (item.NgayKetThuc or '') }}">
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">Đơn giá thuê / đơn vị (VNĐ)</label>
+        <input type="number" step="0.01" min="0" name="ChiphiThue" class="form-control"
+               value="{{ form_data.ChiphiThue if form_data else (item.ChiphiThue if item.ChiphiThue is not none else '') }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <button type="submit" class="btn btn-brand">Lưu</button>
+        <a href="{{ url_for('nhansu.list_phan_cong', ma=item.nhansu_MaNV) }}" class="btn btn-outline-secondary">Hủy</a>
+    </div>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Phiên bản - {{ item.TenBV }}{% endblock %}
+{% block extra_css %}<link href="{{ url_for('static', filename='css/banve.css') }}" rel="stylesheet">{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Phiên bản bản vẽ: {{ item.TenBV }} <span class="badge badge-brand">{{ item.MaBV }}</span></h2>
+    <a href="{{ url_for('banve.list_banve') }}" class="btn btn-outline-secondary">&larr; Quay lại danh sách</a>
+</div>
+
+<div class="card-panel mb-3">
+    <div class="detail-row"><span class="detail-label">Hạng mục</span><span class="detail-value"><a href="{{ url_for('hangmuc.detail_hangmuc', ma=item.hangmuc_hangmuc_MaHangMuc) }}" class="link-navy">{{ item.hangmuc_hangmuc_MaHangMuc }}</a></span></div>
+    <div class="detail-row"><span class="detail-label">Loại bản vẽ</span><span class="detail-value">{{ item.LoaiBV or 'Chưa có' }}</span></div>
+</div>
+
+{% if co_toan_quyen() %}
+<div class="card-panel mb-3">
+    <h5 class="mb-3">Tải lên phiên bản mới</h5>
+    <form method="post" action="{{ url_for('banve.add_phien_ban', ma=item.MaBV) }}" enctype="multipart/form-data" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Họ người tạo</label>
+            <input type="text" name="HoNguoiTao" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Tên người tạo</label>
+            <input type="text" name="TenNguoiTao" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">File bản vẽ</label>
+            <input type="file" name="file_ban_ve" class="form-control" required>
+        </div>
+        <div class="col-12">
+            <div class="form-text mb-2">
+                Định dạng cho phép: pdf, png, jpg, jpeg, dwg (tối đa 20MB). Số phiên bản và ngày tạo
+                sẽ do hệ thống tự sinh; trạng thái ban đầu luôn là "Chờ duyệt".
+            </div>
+            <button type="submit" class="btn btn-brand">Tải lên</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<div class="card-panel">
+<table class="table table-brand table-hover align-middle mb-0">
+    <thead>
+        <tr>
+            <th>Phiên bản</th>
+            <th>Ngày tạo</th>
+            <th>Người tạo</th>
+            <th>Trạng thái</th>
+            <th>Ngày duyệt</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pb in danh_sach %}
+        <tr>
+            <td><span class="badge badge-brand">v{{ pb.SoPhienBan }}</span></td>
+            <td>{{ pb.NgayTao | ngay_vn }}</td>
+            <td>{{ pb.HoNguoiTao }} {{ pb.TenNguoiTao }}</td>
+            <td>
+                {% if pb.trangthaiphienban_MaTrangThai == 'DA_DUYET' %}
+                <span class="badge bg-success">{{ pb.trang_thai.TenTrangThai }}</span>
+                {% elif pb.trangthaiphienban_MaTrangThai == 'CU' %}
+                <span class="badge bg-secondary">{{ pb.trang_thai.TenTrangThai }}</span>
+                {% elif pb.trangthaiphienban_MaTrangThai == 'TU_CHOI' %}
+                <span class="badge bg-danger">{{ pb.trang_thai.TenTrangThai }}</span>
+                {% else %}
+                <span class="badge bg-warning text-dark">{{ pb.trang_thai.TenTrangThai }}</span>
+                {% endif %}
+            </td>
+            <td>{{ pb.NgayDuyet | ngay_vn }}</td>
+            <td>
+                <a href="{{ url_for('banve.xem_hinh_phien_ban', ma_pb=pb.MaPB) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-info">Xem bản vẽ</a>
+                <a href="{{ url_for('banve.tai_xuong_phien_ban', ma_pb=pb.MaPB) }}" class="btn btn-sm btn-outline-primary">Tải xuống</a>
+                {% if pb.trangthaiphienban_MaTrangThai == 'DA_DUYET' and hien_hanh and pb.MaPB == hien_hanh.MaPB %}
+                <span class="badge bg-success">Mới</span>
+                {% elif pb.trangthaiphienban_MaTrangThai == 'DA_DUYET' %}
+                <span class="badge bg-secondary">Cũ</span>
+                {% endif %}
+                {% if co_toan_quyen() %}
+                    {% if pb.trangthaiphienban_MaTrangThai == 'CHO_DUYET' %}
+                    <form action="{{ url_for('banve.duyet_phien_ban', ma_pb=pb.MaPB) }}" method="post" class="d-inline"
+                          onsubmit="return confirm('Duyệt phiên bản này?');">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Duyệt</button>
+                    </form>
+                    <form action="{{ url_for('banve.tu_choi_phien_ban', ma_pb=pb.MaPB) }}" method="post" class="d-inline"
+                          onsubmit="return confirm('Từ chối phiên bản này?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Từ chối</button>
+                    </form>
+                    {% endif %}
+                      {% if pb.trangthaiphienban_MaTrangThai != 'DA_DUYET' or not hien_hanh or pb.MaPB != hien_hanh.MaPB %}
+                    <form action="{{ url_for('banve.delete_phien_ban', ma_pb=pb.MaPB) }}" method="post" class="d-inline"
+                          onsubmit="return confirm('Xóa phiên bản này?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Chưa có phiên bản nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
